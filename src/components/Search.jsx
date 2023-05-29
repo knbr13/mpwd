@@ -21,10 +21,21 @@ const Search = () => {
       setErr(true);
     }
   };
+
+  const handleKey = (e) => {
+    e.code === "Enter" && handleSearch();
+  };
+
   return (
     <div className="search">
       <div className="searchForm">
-        <input type="text" placeholder="Find a user" />
+        <input
+          type="text"
+          placeholder="Find a user"
+          onKeyDown={handleKey}
+          onChange={(e) => setUsername(e.target.value)}
+          value={username}
+        />
       </div>
 
       <div className="userChat">
