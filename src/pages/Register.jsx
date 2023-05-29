@@ -53,6 +53,7 @@ const Register = () => {
         });
       });
     } catch (err) {
+      console.log(err.message)
       setErr(true);
       setLoading(false);
     }
@@ -67,7 +68,7 @@ const Register = () => {
           <input required type="text" placeholder="display name" />
           <input required type="email" placeholder="email" />
           <input required type="password" placeholder="password" />
-          <input required style={{ display: "none" }} type="file" id="file" />
+          <input style={{ display: "none" }} type="file" id="file" />
           <label htmlFor="file">
             <img src={Add} alt="" />
             <span>Add an avatar</span>
