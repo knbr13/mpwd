@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"net/url"
+	"os"
 	"sync"
 )
 
@@ -16,4 +18,19 @@ type Server struct {
 	ActiveConnections int        // Count of active connections
 	Mutex             sync.Mutex // A mutex for safe concurrency
 	Healthy           bool
+}
+
+func loadConfig(file string) (Config, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return Config{}, err
+	}
+	defer f.Close()
+
+	var config Config
+	err = json.NewDecoder(f).Decode(&config)
+	if err != nil {
+		return Config{}, err
+	}
+	return config, nil
 }
