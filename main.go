@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"sync"
@@ -49,4 +50,8 @@ func nextServerLeastActive(servers []*Server) *Server {
 	}
 
 	return leastActiveServer
+}
+
+func (s *Server) Proxy() *httputil.ReverseProxy {
+	return httputil.NewSingleHostReverseProxy(s.URL)
 }
