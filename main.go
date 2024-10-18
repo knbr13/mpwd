@@ -34,3 +34,19 @@ func loadConfig(file string) (Config, error) {
 	}
 	return config, nil
 }
+
+func nextServerLeastActive(servers []*Server) *Server {
+	minActiveConnections := int(^uint(0) >> 1)
+	var leastActiveServer *Server
+
+	for _, server := range servers {
+		server.Mutex.Lock()
+		if server.ActiveConnections < minActiveConnections && server.Healthy {
+			minActiveConnections = server.ActiveConnections
+			leastActiveServer = server
+		}
+		server.Mutex.Unlock()
+	}
+
+	return leastActiveServer
+}
