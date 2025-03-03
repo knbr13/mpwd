@@ -3,12 +3,14 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+
+	"github.com/knbr13/mpwd/internal/hash"
 )
 
-var storeFile string
+var storePath string
 
 var initCmd = &cobra.Command{
 	Use:   "init <master-password>",
@@ -18,35 +20,47 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		masterPassword := args[0]
 		var err error
-		if storeFile == "" {
-			storeFile, err = os.UserHomeDir()
+		if storePath == "" {
+			storePath, err = os.UserHomeDir()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: %v\n", err)
 				os.Exit(1)
 			}
 		}
-		if !strings.HasPrefix(storeFile, ".") {
-			storeFile = "." + storeFile // make it a hidden file
-		}
 
-		f, err := os.Create(storeFile)
+		fName := filepath.Join(storePath, ".mpwd.yaml")
+
+		f, err := os.Create(fName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
 		defer f.Close()
 
-		_, err = fmt.Fprintln(f, fmt.Sprintf("master-password: %s", masterPassword))
+		hashedPassword, err := hash.HashPassword(masterPassword)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error hashing password: %v\n", err)
+			os.Exit(1)
+		}
+
+		_, err = f.Write(hashedPassword)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error writing to file: %v\n", err)
+			os.Exit(1)
+		}
+
+		absPath, err := filepath.Abs(fName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("store file created")
+
+		fmt.Printf("password manager initialized, store file created %q\n", absPath)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().StringVarP(&storeFile, "store", "s", "", "Path to the store file (optional)")
+	initCmd.Flags().StringVarP(&storePath, "store", "s", "", "Path to the store file (optional)")
 }
